@@ -128,3 +128,30 @@ class My_Generator(Sequence):
     #     batch_images = np.array(batch_images, np.float32) / 255
     #     batch_y = np.array(batch_y, np.float32)
     #     return batch_images, batch_y
+    
+    
+#test generator
+
+if __name__ == '__main__':
+    import os
+    train_path = 'avmtrain.txt'
+    with open(train_path, 'r') as f:
+        img_files = [x.replace('/', os.sep) for x in f.read().splitlines()]
+
+    labelseg_files = [x.replace('/images', '/labels').replace(os.path.splitext(x)[-1], '.png')
+                            for x in img_files]
+    mygen = My_Generator1(img_files, labelseg_files, 1, num_cls = 3, is_train=True, input_size = 320)
+
+    for count, (x,y) in enumerate(mygen):
+        print(x.shape)
+        print(y[0].shape)
+        image = 255*x[0]
+        image[y[0][:,:,0]>0.5]=255 #mark
+        image[:,:,2][y[0][:,:,1]>0.5]=255 #car
+        image[:,:,0][y[0][:,:,2]>0.5]=255 #obstacle
+        cv2.imwrite('draw/%s.jpg'%count, image)
+        # cv2.imwrite('mask1.jpg', 255*y[0][:,:,0])
+        # cv2.imwrite('mask2.jpg', 255*y[0][:,:,1])
+        # cv2.imwrite('mask3.jpg', 255*y[0][:,:,2])
+        if count>100:
+            break
